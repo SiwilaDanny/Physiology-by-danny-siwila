@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GI Physiology Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
+        }
+        
+        .screen {
+            display: none;
+            padding: 30px;
+            flex: 1;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .main-menu {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .menu-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            width: 250px;
+        }
+        
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .question {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+        
+        .options {
+            display: grid;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .option:hover {
+            background: #e9ecef;
+            border-color: #3498db;
+        }
+        
+        .option.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .option.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .feedback {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .feedback.incorrect {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .next-btn {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            display: none;
+            margin: 20px auto;
+        }
+        
+        .score-board {
+            text-align: center;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .results {
+            text-align: center;
+        }
+        
+        .results h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .final-score {
+            font-size: 3em;
+            color: #3498db;
+            margin: 20px 0;
+        }
+        
+        .performance {
+            font-size: 1.3em;
+            margin: 20px 0;
+            color: #7f8c8d;
+        }
+        
+        .organ-diagram {
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .question {
+                font-size: 1.2em;
+            }
+            
+            .menu-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GI Physiology Challenge</h1>
+            <p class="subtitle">Race through the digestive system by testing your knowledge!</p>
+        </header>
+        
+        <div class="game-area">
+            <!-- Main Menu Screen -->
+            <div id="main-menu" class="screen active">
+                <div class="main-menu">
+                    <h2>Select Game Mode</h2>
+                    <button class="menu-btn" onclick="startGame('quick')">Quick Quiz (10 Questions)</button>
+                    <button class="menu-btn" onclick="startGame('full')">Full Exam (30 Questions)</button>
+                    <button class="menu-btn" onclick="startGame('organ')">Organ-Specific Quiz</button>
+                    <button class="menu-btn" onclick="showScreen('instructions')">How to Play</button>
+                </div>
+            </div>
+            
+            <!-- Instructions Screen -->
+            <div id="instructions" class="screen">
+                <h2>How to Play</h2>
+                <div style="margin: 20px 0; line-height: 1.6;">
+                    <p><strong>Objective:</strong> Answer GI physiology questions correctly to progress through the digestive system.</p>
+                    <p><strong>Scoring:</strong> +10 points for each correct answer. No penalty for wrong answers.</p>
+                    <p><strong>Game Modes:</strong></p>
+                    <ul style="text-align: left; margin: 15px 30px;">
+                        <li><strong>Quick Quiz:</strong> 10 random questions</li>
+                        <li><strong>Full Exam:</strong> 30 comprehensive questions</li>
+                        <li><strong>Organ-Specific:</strong> Focus on one organ system</li>
+                    </ul>
+                    <p>Track your progress with the progress bar and try to beat your high score!</p>
+                </div>
+                <button class="menu-btn" onclick="showScreen('main-menu')">Back to Main Menu</button>
+            </div>
+            
+            <!-- Organ Selection Screen -->
+            <div id="organ-selection" class="screen">
+                <h2>Select an Organ System</h2>
+                <div class="options" style="grid-template-columns: 1fr 1fr; margin-top: 30px;">
+                    <button class="option" onclick="startOrganQuiz('foundation')">Foundation & Innervation</button>
+                    <button class="option" onclick="startOrganQuiz('mouth')">Mouth & Saliva</button>
+                    <button class="option" onclick="startOrganQuiz('stomach')">Stomach</button>
+                    <button class="option" onclick="startOrganQuiz('pancreas')">Pancreas</button>
+                    <button class="option" onclick="startOrganQuiz('liver')">Liver & Gallbladder</button>
+                    <button class="option" onclick="startOrganQuiz('intestines')">Intestines</button>
+                    <button class="option" onclick="startOrganQuiz('motility')">Motility</button>
+                    <button class="option" onclick="startOrganQuiz('hormones')">Hormones</button>
+                </div>
+                <button class="menu-btn" style="margin-top: 30px;" onclick="showScreen('main-menu')">Back to Main Menu</button>
+            </div>
+            
+            <!-- Quiz Screen -->
+            <div id="quiz-screen" class="screen">
+                <div class="score-board">
+                    Score: <span id="score">0</span> | Question: <span id="question-count">1</span>/<span id="total-questions">10</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress" id="progress-bar"></div>
+                </div>
+                <div class="quiz-container">
+                    <div class="question" id="question-text">Loading question...</div>
+                    <div class="options" id="options-container">
+                        <!-- Options will be inserted here by JavaScript -->
+                    </div>
+                    <div class="feedback" id="feedback">
+                        <!-- Feedback will be inserted here -->
+                    </div>
+                    <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question</button>
+                </div>
+            </div>
+            
+            <!-- Results Screen -->
+            <div id="results-screen" class="screen">
+                <div class="results">
+                    <h2>Quiz Complete!</h2>
+                    <div class="final-score" id="final-score">0</div>
+                    <div class="performance" id="performance-text">Calculating your performance...</div>
+                    <div style="margin: 30px 0;">
+                        <p id="results-details">Correct: 0/0 (0%)</p>
+                    </div>
+                    <button class="menu-btn" onclick="showScreen('main-menu')">Back to Main Menu</button>
+                    <button class="menu-btn" onclick="restartGame()">Play Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let currentGame = {
+            score: 0,
+            currentQuestion: 0,
+            totalQuestions: 10,
+            questions: [],
+            gameMode: 'quick'
+        };
+
+        // Question database
+        const questionBank = [
+            // Foundation & Innervation
+            {
+                category: 'foundation',
+                question: 'What are the four layers of the GI tract wall?',
+                options: [
+                    'Mucosa, Submucosa, Muscularis, Serosa',
+                    'Epithelium, Lamina Propria, Muscularis Mucosae, Adventitia',
+                    'Mucosa, Submucosa, Muscularis Externa, Adventitia',
+                    'Serosa, Muscularis, Submucosa, Epithelium'
+                ],
+                answer: 0,
+                explanation: 'Correct! The four layers from innermost to outermost are: Mucosa, Submucosa, Muscularis, and Serosa.'
+            },
+            {
+                category: 'foundation',
+                question: 'The Enteric Nervous System is made of two plexuses. Name them.',
+                options: [
+                    'Myenteric and Submucosal Plexuses',
+                    'Auerbach and Meissner Plexuses',
+                    'Both A and B are correct',
+                    'Vagus and Splanchnic Plexuses'
+                ],
+                answer: 2,
+                explanation: 'Correct! The Myenteric (Auerbach\'s) plexus controls motility, and the Submucosal (Meissner\'s) plexus controls secretion.'
+            },
+            {
+                category: 'foundation',
+                question: 'What is the effect of the Sympathetic nervous system on the GIT?',
+                options: [
+                    'Stimulates motility and secretion',
+                    'Inhibits motility and secretion, constricts sphincters',
+                    'Has no effect on the GIT',
+                    'Only affects blood flow, not function'
+                ],
+                answer: 1,
+                explanation: 'Correct! Sympathetic activity inhibits GI function during "fight or flight" situations.'
+            },
+            {
+                category: 'foundation',
+                question: 'What is the effect of the Parasympathetic nervous system on the GIT?',
+                options: [
+                    'Inhibits motility and secretion',
+                    'Stimulates motility and secretion, relaxes sphincters',
+                    'Only affects salivation',
+                    'Constricts all sphincters'
+                ],
+                answer: 1,
+                explanation: 'Correct! Parasympathetic activity promotes "rest and digest" functions.'
+            },
+            
+            // Mouth & Saliva
+            {
+                category: 'mouth',
+                question: 'Saliva becomes hypotonic in the ducts. Why?',
+                options: [
+                    'More water is secreted than solutes',
+                    'More NaCl is reabsorbed than KHCO3 is secreted, and ducts are water-impermeable',
+                    'The acinar cells secrete hypotonic fluid',
+                    'Enzymes in saliva consume the solutes'
+                ],
+                answer: 1,
+                explanation: 'Correct! Ductal cells reabsorb more NaCl than they secrete KHCO3, and since they are impermeable to water, the saliva becomes hypotonic.'
+            },
+            {
+                category: 'mouth',
+                question: 'Name the three major salivary glands.',
+                options: [
+                    'Parotid, Submandibular, Sublingual',
+                    'Parotid, Sublingual, Buccal',
+                    'Submandibular, Sublingual, Palatine',
+                    'Parotid, Buccal, Lingual'
+                ],
+                answer: 0,
+                explanation: 'Correct! The three major pairs are: Parotid, Submandibular, and Sublingual glands.'
+            },
+            {
+                category: 'mouth',
+                question: 'Which nerve is primarily responsible for parasympathetic stimulation of salivary glands?',
+                options: [
+                    'Facial and Glossopharyngeal nerves',
+                    'Vagus nerve only',
+                    'Trigeminal nerve',
+                    'Hypoglossal nerve'
+                ],
+                answer: 0,
+                explanation: 'Correct! The facial nerve (VII) innervates submandibular and sublingual glands, and the glossopharyngeal nerve (IX) innervates the parotid gland.'
+            },
+            
+            // Stomach
+            {
+                category: 'stomach',
+                question: 'Name the cell that secretes HCl in the stomach.',
+                options: [
+                    'Chief cells',
+                    'Parietal cells',
+                    'G-cells',
+                    'Mucous cells'
+                ],
+                answer: 1,
+                explanation: 'Correct! Parietal (oxyintic) cells secrete hydrochloric acid and intrinsic factor.'
+            },
+            {
+                category: 'stomach',
+                question: 'What are the three phases of gastric secretion?',
+                options: [
+                    'Oral, Pharyngeal, Esophageal',
+                    'Cephalic, Gastric, Intestinal',
+                    'Primary, Secondary, Tertiary',
+                    'Neural, Hormonal, Local'
+                ],
+                answer: 1,
+                explanation: 'Correct! Cephalic (head), Gastric (stomach), and Intestinal (intestine) phases regulate gastric secretion.'
+            },
+            {
+                category: 'stomach',
+                question: 'Which phase of gastric secretion is triggered by the smell of food and is purely neural?',
+                options: [
+                    'Gastric phase',
+                    'Cephalic phase',
+                    'Intestinal phase',
+                    'Esophageal phase'
+                ],
+                answer: 1,
+                explanation: 'Correct! The cephalic phase is mediated by the vagus nerve in response to sight, smell, or thought of food.'
+            },
+            {
+                category: 'stomach',
+                question: 'What hormone, released by G-cells, stimulates gastric acid secretion?',
+                options: [
+                    'Secretin',
+                    'Gastrin',
+                    'Cholecystokinin (CCK)',
+                    'Somatostatin'
+                ],
+                answer: 1,
+                explanation: 'Correct! Gastrin is released by G-cells in the stomach antrum and stimulates HCl secretion.'
+            },
+            {
+                category: 'stomach',
+                question: 'What bacterium is a primary cause of peptic ulcers?',
+                options: [
+                    'Escherichia coli',
+                    'Helicobacter pylori',
+                    'Staphylococcus aureus',
+                    'Streptococcus pyogenes'
+                ],
+                answer: 1,
+                explanation: 'Correct! H. pylori infection is the most common cause of peptic ulcers.'
+            },
+            
+            // Pancreas
+            {
+                category: 'pancreas',
+                question: 'What are the two functional components of pancreatic juice?',
+                options: [
+                    'Enzymatic and Aqueous/HCO3- components',
+                    'Acidic and Basic components',
+                    'Endocrine and Exocrine components',
+                    'Digestive and Absorptive components'
+                ],
+                answer: 0,
+                explanation: 'Correct! The enzymatic component digests nutrients, while the aqueous component (rich in HCO3-) neutralizes acid.'
+            },
+            {
+                category: 'pancreas',
+                question: 'Which pancreatic enzyme activates all the other proteases?',
+                options: [
+                    'Chymotrypsin',
+                    'Trypsin',
+                    'Carboxypeptidase',
+                    'Elastase'
+                ],
+                answer: 1,
+                explanation: 'Correct! Trypsin activates chymotrypsin, carboxypeptidase, elastase, and other enzymes.'
+            },
+            {
+                category: 'pancreas',
+                question: 'What is the role of secretin?',
+                options: [
+                    'Stimulates pancreatic enzyme secretion',
+                    'Stimulates pancreatic HCO3- secretion to neutralize acid',
+                    'Stimulates gallbladder contraction',
+                    'Inhibits gastric emptying'
+                ],
+                answer: 1,
+                explanation: 'Correct! Secretin is released in response to acid in the duodenum and stimulates pancreatic HCO3- secretion.'
+            },
+            
+            // Liver & Gallbladder
+            {
+                category: 'liver',
+                question: 'What is the role of Cholecystokinin (CCK)?',
+                options: [
+                    'Stimulates gastric acid secretion',
+                    'Stimulates pancreatic HCO3- secretion',
+                    'Stimulates pancreatic enzyme secretion & gallbladder contraction',
+                    'Inhibits all digestive processes'
+                ],
+                answer: 2,
+                explanation: 'Correct! CCK is released in response to fats and proteins and stimulates pancreatic enzyme release and gallbladder contraction.'
+            },
+            {
+                category: 'liver',
+                question: 'What is the main function of bile salts?',
+                options: [
+                    'Digest proteins',
+                    'Digest carbohydrates',
+                    'Emulsify and solubilize dietary lipids',
+                    'Neutralize stomach acid'
+                ],
+                answer: 2,
+                explanation: 'Correct! Bile salts emulsify fats (mechanical breakdown) and form micelles to solubilize lipids for absorption.'
+            },
+            {
+                category: 'liver',
+                question: 'Describe the Enterohepatic Circulation in one sentence.',
+                options: [
+                    'The flow of blood from intestines to liver',
+                    'The recycling of bile salts from the ileum back to the liver',
+                    'The circulation of enzymes in the pancreas',
+                    'The movement of chyme through the intestines'
+                ],
+                answer: 1,
+                explanation: 'Correct! Bile salts are reabsorbed in the ileum, returned to the liver via portal blood, and resecreted into bile.'
+            },
+            {
+                category: 'liver',
+                question: 'What is Jaundice?',
+                options: [
+                    'A liver infection',
+                    'Yellowing of skin due to buildup of bilirubin',
+                    'A type of hepatitis',
+                    'Gallbladder inflammation'
+                ],
+                answer: 1,
+                explanation: 'Correct! Jaundice (icterus) results from accumulation of bilirubin in tissues.'
+            },
+            
+            // Intestines
+            {
+                category: 'intestines',
+                question: 'What is the main secretion of the small intestine called?',
+                options: [
+                    'Chyme',
+                    'Succus Entericus',
+                    'Mucus',
+                    'Bile'
+                ],
+                answer: 1,
+                explanation: 'Correct! Succus Entericus is the alkaline secretion from intestinal glands.'
+            },
+            {
+                category: 'intestines',
+                question: 'What are the two main types of motility in the small intestine?',
+                options: [
+                    'Peristalsis and Antiperistalsis',
+                    'Segmentation and Peristalsis',
+                    'Mixing and Propulsion',
+                    'Haustrations and Mass movements'
+                ],
+                answer: 1,
+                explanation: 'Correct! Segmentation (mixing) and Peristalsis (propulsion) are the primary motility patterns.'
+            },
+            {
+                category: 'intestines',
+                question: 'Most nutrient absorption occurs in the:',
+                options: [
+                    'Stomach',
+                    'Duodenum',
+                    'Jejunum and Ileum',
+                    'Large Intestine'
+                ],
+                answer: 2,
+                explanation: 'Correct! While some absorption occurs in the duodenum, the jejunum and ileum are the primary sites for nutrient absorption.'
+            },
+            {
+                category: 'intestines',
+                question: 'Fats are absorbed into the _____, not the blood capillaries.',
+                options: [
+                    'Lacteals',
+                    'Venules',
+                    'Arterioles',
+                    'Hepatic portal vein'
+                ],
+                answer: 0,
+                explanation: 'Correct! Chylomicrons (fat packages) are too large for blood capillaries and enter the lymphatic system via lacteals.'
+            },
+            {
+                category: 'intestines',
+                question: 'What is the primary function of the Large Intestine?',
+                options: [
+                    'Digest proteins',
+                    'Absorb water and electrolytes, form feces',
+                    'Absorb most nutrients',
+                    'Produce digestive enzymes'
+                ],
+                answer: 1,
+                explanation: 'Correct! The large intestine primarily absorbs water and electrolytes, and forms/stores feces.'
+            },
+            {
+                category: 'intestines',
+                question: 'Which vitamin is synthesized by colonic bacteria?',
+                options: [
+                    'Vitamin C',
+                    'Vitamin D',
+                    'Vitamin A',
+                    'Vitamin K'
+                ],
+                answer: 3,
+                explanation: 'Correct! Vitamin K and some B vitamins are synthesized by colonic bacteria.'
+            },
+            
+            // Motility
+            {
+                category: 'motility',
+                question: 'What are the three stages of swallowing?',
+                options: [
+                    'Oral, Gastric, Intestinal',
+                    'Buccal, Pharyngeal, Esophageal',
+                    'Oral, Pharyngeal, Esophageal',
+                    'Voluntary, Involuntary, Reflex'
+                ],
+                answer: 2,
+                explanation: 'Correct! The three stages are: 1) Oral (voluntary), 2) Pharyngeal (involuntary), 3) Esophageal (involuntary).'
+            },
+            {
+                category: 'motility',
+                question: 'The relaxation of the stomach when food enters is called:',
+                options: [
+                    'Receptive Relaxation',
+                    'Adaptive Dilatation',
+                    'Gastric Accommodation',
+                    'Both A and C'
+                ],
+                answer: 3,
+                explanation: 'Correct! Receptive relaxation (or gastric accommodation) allows the stomach to expand without significant pressure increase.'
+            },
+            {
+                category: 'motility',
+                question: 'The migrating motor complex (MMC) serves to _____ during fasting.',
+                options: [
+                    'Increase nutrient absorption',
+                    'Sweep residual secretions and indigestibles toward the colon',
+                    'Stimulate hunger contractions',
+                    'Prepare for the next meal'
+                ],
+                answer: 1,
+                explanation: 'Correct! The MMC is the "housekeeper" of the gut, clearing residual material between meals.'
+            },
+            {
+                category: 'motility',
+                question: 'The defecation reflex is initiated by:',
+                options: [
+                    'The presence of food in the stomach',
+                    'Distension of the rectum',
+                    'The gastrocolic reflex',
+                    'Voluntary effort'
+                ],
+                answer: 1,
+                explanation: 'Correct! Stretch receptors in the rectal wall initiate the reflex when feces enter the rectum.'
+            },
+            
+            // Hormones
+            {
+                category: 'hormones',
+                question: 'Which hormone is the primary inhibitor of gastric emptying?',
+                options: [
+                    'Gastrin',
+                    'Secretin',
+                    'Cholecystokinin (CCK)',
+                    'Both B and C'
+                ],
+                answer: 3,
+                explanation: 'Correct! Both secretin and CCK inhibit gastric emptying to allow time for intestinal digestion.'
+            },
+            {
+                category: 'hormones',
+                question: 'Which hormone stimulates the release of bile from the gallbladder?',
+                options: [
+                    'Gastrin',
+                    'Secretin',
+                    'Cholecystokinin (CCK)',
+                    'Motilin'
+                ],
+                answer: 2,
+                explanation: 'Correct! CCK causes gallbladder contraction and relaxation of the Sphincter of Oddi.'
+            },
+            {
+                category: 'hormones',
+                question: 'Which hormone is sometimes called "nature\'s antacid"?',
+                options: [
+                    'Gastrin',
+                    'Secretin',
+                    'Cholecystokinin (CCK)',
+                    'Somatostatin'
+                ],
+                answer: 1,
+                explanation: 'Correct! Secretin stimulates pancreatic HCO3- secretion, which neutralizes acidic chyme.'
+            }
+        ];
+
+        // Game functions
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame(mode) {
+            currentGame.score = 0;
+            currentGame.currentQuestion = 0;
+            currentGame.gameMode = mode;
+            
+            if (mode === 'quick') {
+                currentGame.totalQuestions = 10;
+            } else if (mode === 'full') {
+                currentGame.totalQuestions = 30;
+            } else if (mode === 'organ') {
+                showScreen('organ-selection');
+                return;
+            }
+            
+            // Select random questions
+            currentGame.questions = [];
+            const shuffled = [...questionBank].sort(() => 0.5 - Math.random());
+            currentGame.questions = shuffled.slice(0, currentGame.totalQuestions);
+            
+            showScreen('quiz-screen');
+            displayQuestion();
+        }
+
+        function startOrganQuiz(organ) {
+            currentGame.score = 0;
+            currentGame.currentQuestion = 0;
+            currentGame.gameMode = 'organ';
+            
+            // Filter questions by organ category
+            currentGame.questions = questionBank.filter(q => q.category === organ);
+            currentGame.totalQuestions = Math.min(currentGame.questions.length, 15);
+            
+            // If we have fewer questions than needed, use what we have
+            if (currentGame.questions.length > currentGame.totalQuestions) {
+                currentGame.questions = currentGame.questions.slice(0, currentGame.totalQuestions);
+            }
+            
+            showScreen('quiz-screen');
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            const question = currentGame.questions[currentGame.currentQuestion];
+            document.getElementById('question-text').textContent = question.question;
+            document.getElementById('score').textContent = currentGame.score;
+            document.getElementById('question-count').textContent = currentGame.currentQuestion + 1;
+            document.getElementById('total-questions').textContent = currentGame.totalQuestions;
+            
+            // Update progress bar
+            const progress = ((currentGame.currentQuestion) / currentGame.totalQuestions) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            document.getElementById('feedback').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        function selectAnswer(selectedIndex) {
+            const question = currentGame.questions[currentGame.currentQuestion];
+            const options = document.querySelectorAll('.option');
+            const feedback = document.getElementById('feedback');
+            
+            // Disable all options
+            options.forEach(option => {
+                option.onclick = null;
+            });
+            
+            // Show correct/incorrect
+            if (selectedIndex === question.answer) {
+                options[selectedIndex].classList.add('correct');
+                feedback.textContent = question.explanation;
+                feedback.className = 'feedback correct';
+                currentGame.score += 10;
+                document.getElementById('score').textContent = currentGame.score;
+            } else {
+                options[selectedIndex].classList.add('incorrect');
+                options[question.answer].classList.add('correct');
+                feedback.textContent = `Incorrect. ${question.explanation}`;
+                feedback.className = 'feedback incorrect';
+            }
+            
+            feedback.style.display = 'block';
+            document.getElementById('next-btn').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentGame.currentQuestion++;
+            
+            if (currentGame.currentQuestion < currentGame.totalQuestions) {
+                displayQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            const finalScore = currentGame.score;
+            const totalPossible = currentGame.totalQuestions * 10;
+            const percentage = Math.round((finalScore / totalPossible) * 100);
+            
+            document.getElementById('final-score').textContent = finalScore;
+            document.getElementById('results-details').textContent = 
+                `Correct: ${finalScore/10}/${currentGame.totalQuestions} (${percentage}%)`;
+                
+            let performanceText = '';
+            if (percentage >= 90) {
+                performanceText = 'Outstanding! You\'ve mastered GI Physiology!';
+            } else if (percentage >= 80) {
+                performanceText = 'Excellent work! You have a strong grasp of GI Physiology.';
+            } else if (percentage >= 70) {
+                performanceText = 'Good job! You have a solid understanding of the material.';
+            } else if (percentage >= 60) {
+                performanceText = 'Not bad! Review the missed concepts and try again.';
+            } else {
+                performanceText = 'Keep studying! Review the material and try again.';
+            }
+            
+            document.getElementById('performance-text').textContent = performanceText;
+            showScreen('results-screen');
+        }
+
+        function restartGame() {
+            startGame(currentGame.gameMode);
+        }
+
+        // Initialize the game
+        showScreen('main-menu');
+    </script>
+</body>
+</html>
